@@ -1,0 +1,50 @@
+﻿/* Кнопки управления */
+.btn-group-sm > .btn {
+    min-width: 100px; /* Одинаковая ширина */
+}
+
+/* Ссылки не переносятся */
+.short-link {
+    word-break: break-all;
+}
+
+/* Для мобильных */
+@media (max-width: 768px) {
+    .table td {
+        white-space: normal;
+    }
+
+    .d-flex.flex-column {
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+
+/* Фиксированная ширина колонок */
+.table {
+    table-layout: fixed; /* Ключевое! Без этого проценты не работают */
+    width: 100%;
+}
+
+/* Перенос длинных ссылок */
+.table td {
+    word-wrap: break-word;
+    white-space: normal !important; /* Отменяем nowrap */
+}
+
+/* Колонка с длинным URL */
+.table td:first-child {
+    white-space: nowrap; /* Оставляем nowrap только здесь */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Колонка управления */
+.table td:last-child {
+    width: 10%;
+    min-width: 110px; /* Минимальная ширина для кнопок */
+}
