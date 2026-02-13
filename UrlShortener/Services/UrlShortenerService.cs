@@ -1,32 +1,26 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
 
 namespace UrlShortener.Services
 {
     public class UrlShortenerService : IUrlShortenerService
     {
         private const string Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        private const int CodeLength = 7; 
+        private const int CodeLength = 7;
 
         public string GenerateUniqueCode()
         {
-            // Почему RandomNumberGenerator?
-            // System.Random предсказуем, если знать seed (время). 
-            // Криптографический генератор гарантирует непредсказуемость ссылки.
-            var token = new StringBuilder(CodeLength);
-            var bytes = new byte[CodeLength];
+            // через stackalloc выделяем память на стеке, а не в куче
+            Span<byte> randomBytes = stackalloc byte[CodeLength];
+            Span<char> result = stackalloc char[CodeLength];
 
-            using (var rng = RandomNumberGenerator.Create())
+            RandomNumberGenerator.Fill(randomBytes);
+
+            for (int i = 0; i < CodeLength; i++)
             {
-                rng.GetBytes(bytes);
+                result[i] = Alphabet[randomBytes[i] % Alphabet.Length];
             }
 
-            foreach (var b in bytes)
-            {
-                token.Append(Alphabet[b % Alphabet.Length]);
-            }
-
-            return token.ToString();
+            return new string(result);
         }
     }
 }

@@ -15,8 +15,6 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // СОЗДАЁТ БД, ЕСЛИ ЕЁ НЕТ
-    // ПРИМЕНЯЕТ МИГРАЦИИ, ЕСЛИ ОНИ ЕСТЬ
     db.Database.Migrate();
 }
 
@@ -41,12 +39,6 @@ app.MapGet("/{shortCode}", async (string shortCode, AppDbContext db) =>
         return Results.NotFound("Ссылка не найдена");
     }
 
-    // Шаг B: Атомарный инкремент счетчика (Оптимизация для 10000 rps)
-    // Почему ExecuteUpdateAsync?
-    // Обычный подход (link.Clicks++; SaveChanges()) подвержен "Race Condition" 
-    // при одновременных запросах (два клика запишут 1 вместо 2).
-    // ExecuteUpdate генерирует SQL: UPDATE ShortLinks SET Clicks = Clicks + 1 WHERE Id = ...
-    // Это выполняется на уровне базы данных, быстро и безопасно.
     await db.ShortLinks
         .Where(l => l.Id == link.Id)
         .ExecuteUpdateAsync(setters => setters.SetProperty(p => p.ClickCount, p => p.ClickCount + 1));

@@ -22,4 +22,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="FunctionalTests\" />
+    <Folder Include="IntegrationTests\" />
+  </ItemGroup>
+
 </Project>

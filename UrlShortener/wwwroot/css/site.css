@@ -1,50 +1,111 @@
-﻿/* Кнопки управления */
-.btn-group-sm > .btn {
-    min-width: 100px; /* Одинаковая ширина */
+﻿.click-count-badge {
+    font-size: 0.9rem;
+    min-width: 50px;
 }
 
-/* Ссылки не переносятся */
-.short-link {
-    word-break: break-all;
-}
-
-/* Для мобильных */
-@media (max-width: 768px) {
-    .table td {
-        white-space: normal;
-    }
-
-    .d-flex.flex-column {
-        width: 100%;
-    }
-
-    .btn {
-        width: 100%;
-    }
-}
-
-
-/* Фиксированная ширина колонок */
-.table {
-    table-layout: fixed; /* Ключевое! Без этого проценты не работают */
+.table-links {
+    table-layout: fixed;
     width: 100%;
 }
 
-/* Перенос длинных ссылок */
-.table td {
-    word-wrap: break-word;
-    white-space: normal !important; /* Отменяем nowrap */
+.table-links thead th {
+    text-align: center !important;
+    vertical-align: middle;
+    font-weight: 600;
 }
 
-/* Колонка с длинным URL */
-.table td:first-child {
-    white-space: nowrap; /* Оставляем nowrap только здесь */
+.table-links td {
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+.table-links td:nth-child(1),
+.table-links th:nth-child(1) {
+    width: 45%;
+    text-align: left;
+}
+
+.table-links td:nth-child(1) a {
+    display: inline-block;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #0d6efd;
+    text-decoration: none;
 }
 
-/* Колонка управления */
-.table td:last-child {
+.table-links td:nth-child(1) a:hover {
+    text-decoration: underline;
+}
+
+.table-links td:nth-child(1) input[type="url"] {
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.table-links td:nth-child(2),
+.table-links th:nth-child(2) {
+    width: 20%;
+    text-align: left; 
+}
+
+.table-links td:nth-child(2) a {
+    color: #0d6efd; 
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.table-links td:nth-child(2) a:hover {
+    text-decoration: underline;
+}
+
+.table-links td:nth-child(2) .d-flex {
+    justify-content: flex-start; 
+    gap: 8px;
+}
+
+.table-links td:nth-child(3),
+.table-links th:nth-child(3) {
+    width: 15%;
+    text-align: center;
+}
+
+.table-links td:nth-child(4),
+.table-links th:nth-child(4) {
     width: 10%;
-    min-width: 110px; /* Минимальная ширина для кнопок */
+    text-align: center;
+}
+
+.table-links td:nth-child(4) .badge {
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.table-links td:nth-child(5),
+.table-links th:nth-child(5) {
+    width: 15%;
+    text-align: center;
+}
+
+.table-links td:nth-child(5) .btn {
+    width: 100%;
+    margin: 2px 0;
+    font-size: 0.9rem;
+    padding: 0.375rem 0.5rem;
+}
+
+.table-links td:nth-child(5) .d-flex {
+    gap: 2px;
+}
+
+.table-links td:last-child {
+    padding-right: 8px;
+}
+
+.table-links td:first-child {
+    padding-left: 8px;
 }

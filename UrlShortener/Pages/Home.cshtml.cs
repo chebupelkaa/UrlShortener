@@ -7,17 +7,16 @@ using UrlShortener.Services;
 
 namespace UrlShortener.Pages;
 
-public class IndexModel : PageModel
+public class HomeModel : PageModel
 {
     private readonly AppDbContext _context;
     private readonly IUrlShortenerService _shortenerService;
 
-    public IndexModel(AppDbContext context, IUrlShortenerService shortenerService)
+    public HomeModel(AppDbContext context, IUrlShortenerService shortenerService)
     {
         _context = context;
         _shortenerService = shortenerService;
     }
-
 
     [BindProperty]
     public string NewUrl { get; set; } = string.Empty;
@@ -29,12 +28,10 @@ public class IndexModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public int PageNumber { get; set; } = 1;
-
-
     public int PageSize { get; set; } = 5;
     public int TotalCount { get; set; }
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-    public int ReturnPageNumber { get; set; }
+    //public int ReturnPageNumber { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -97,17 +94,6 @@ public class IndexModel : PageModel
         return RedirectToPage(new { pageNumber });
     }
 
-    public string Truncate(string url, int length)
-    {
-        if (string.IsNullOrEmpty(url)) return url;
-        return url.Length <= length ? url : url.Substring(0, length - 3) + "...";
-    }
-
-    //private async Task LoadLinksAsync()
-    //{
-    //    ShortLinks = await _context.ShortLinks.OrderByDescending(l => l.CreatedAt).ToListAsync();
-
-    //}
     private async Task LoadLinksAsync()
     {
         var query = _context.ShortLinks.OrderByDescending(l => l.CreatedAt);
