@@ -15,16 +15,17 @@ namespace UrlShortener.Services
             _codeGenerator = codeGenerator;
         }
 
+        //данная функция нужна для загрузки только необходимого кол-ва записей на странице (чтобы не загружать все записи сразу)
         public async Task<(List<ShortLink> Links, int TotalCount)> GetPagedLinksAsync(int page, int pageSize)
         {
+            //OrderByDescending по дате чтобы записи было видно на первой странице
             var query = _context.ShortLinks.OrderByDescending(l => l.CreatedAt);
 
             var totalCount = await query.CountAsync();
+            //проверки (если в url попадет неправильно число page)
+            page = CorrectPageNumber(page, totalCount, pageSize);
 
-            var totalPages = CalculateTotalPages(totalCount, pageSize);
-            if (page > totalPages && totalPages > 0) page = totalPages;
-            if (page < 1) page = 1;
-
+            //только нужное кол-во записей на странице
             var links = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -35,6 +36,7 @@ namespace UrlShortener.Services
 
         public async Task<ShortLink> CreateLinkAsync(string originalUrl)
         {
+            //проверка уникальности shortCode в бд, если есть повтор, то сгенерировать заново
             string shortCode;
             do
             {
@@ -84,6 +86,16 @@ namespace UrlShortener.Services
         public async Task<int> GetTotalCountAsync()
         {
             return await _context.ShortLinks.CountAsync();
+        }
+
+        public int CorrectPageNumber(int page, int totalCount, int pageSize)
+        {
+            var totalPages = CalculateTotalPages(totalCount, pageSize);
+
+            if (page > totalPages && totalPages > 0) return totalPages;
+            if (page < 1) return 1;
+
+            return page;
         }
     }
 }

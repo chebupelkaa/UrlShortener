@@ -41,7 +41,8 @@
                                         <td>
                                             @if (Model.EditingId == link.Id)
                                             {
-                                                <form method="post" asp-page-handler="Update" asp-route-id="@link.Id" id="edit-form-@link.Id" asp-route-pageNumber="@Model.PageNumber">
+                                                <form method="post" asp-page-handler="Update" asp-route-id="@link.Id" id="edit-form-@link.Id"
+                                                      asp-route-pageNumber="@Model.PageNumber">
                                                     <input type="url" name="newUrl" value="@link.OriginalUrl" class="form-control form-control-sm" />
                                                 </form>
                                             }
@@ -58,9 +59,6 @@
                                                 <a href="/@link.ShortCode" target="_blank" class="link-styled">
                                                     @($"{Request.Scheme}://{Request.Host}/{link.ShortCode}")
                                                 </a>
-                                                <button class="btn btn-sm btn-link p-0 text-decoration-none text-secondary"
-                                                        onclick="navigator.clipboard.writeText('@($"{Request.Scheme}://{Request.Host}/{link.ShortCode}")')">
-                                                </button>
                                             </div>
                                         </td>
 
@@ -89,10 +87,12 @@
                                             else
                                             {
                                                 <div class="d-grid gap-1">
-                                                    <a asp-page="/Home" asp-route-editId="@link.Id" asp-route-pageNumber="@Model.PageNumber" class="btn btn-primary btn-sm">
+                                                    <a asp-page="/Home" asp-route-editId="@link.Id" asp-route-pageNumber="@Model.PageNumber"
+                                                       class="btn btn-primary btn-sm">
                                                         Редактировать
                                                     </a>
-                                                    <a asp-page-handler="Delete" asp-route-id="@link.Id" asp-route-pageNumber="@Model.PageNumber" class="btn btn-primary btn-sm" onclick="return confirm('Удалить ссылку?')">
+                                                    <a asp-page-handler="Delete" asp-route-id="@link.Id" asp-route-pageNumber="@Model.PageNumber"
+                                                       class="btn btn-primary btn-sm" onclick="return confirm('Удалить ссылку?')">
                                                         Удалить
                                                     </a>
                                                 </div>
@@ -110,22 +110,26 @@
                         </tbody>
                     </table>
 
-                    <nav>
-                        <ul class="pagination justify-content-center mt-3">
-                            <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
-                                <a class="page-link" asp-page="/Home" asp-route-pageNumber="@(Model.PageNumber - 1)">Назад</a>
-                            </li>
-                            @for (int i = 1; i <= Model.TotalPages; i++)
-                            {
-                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
-                                    <a class="page-link" asp-page="/Home" asp-route-pageNumber="@i">@i</a>
+                    @if (Model.TotalPages > 0)
+                    {
+                        <nav>
+                            <ul class="pagination justify-content-center mt-3">
+                                <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                                    <a class="page-link" asp-page="/Home" asp-route-pageNumber="@(Model.PageNumber - 1)">Назад</a>
                                 </li>
-                            }
-                            <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
-                                <a class="page-link" asp-page="/Home" asp-route-pageNumber="@(Model.PageNumber + 1)">Вперед</a>
-                            </li>
-                        </ul>
-                    </nav>
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                        <a class="page-link" asp-page="/Home" asp-route-pageNumber="@i">@i</a>
+                                    </li>
+                                }
+                                <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                                    <a class="page-link" asp-page="/Home" asp-route-pageNumber="@(Model.PageNumber + 1)">Вперед</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+
                 </div>
             </div>
         </div>

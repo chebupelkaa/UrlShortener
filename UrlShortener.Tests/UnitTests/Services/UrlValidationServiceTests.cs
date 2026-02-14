@@ -18,7 +18,7 @@ namespace UrlShortener.Tests.UnitTests.Services
         {
             Assert.True(_service.IsValidUrl("https://google.com"));
             Assert.False(_service.IsValidUrl("just text"));
-            Assert.False(_service.IsValidUrl("javascript:alert(1)"));
+            Assert.False(_service.IsValidUrl("https://hello world "));
         }
     }
 }

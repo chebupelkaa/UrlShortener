@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Runtime.InteropServices;
 using UrlShortener.Models;
 using UrlShortener.Services;
 
@@ -21,6 +22,7 @@ public class HomeModel : PageModel
 
     public List<ShortLink> ShortLinks { get; set; } = new();
 
+    //для переключения на режим редактирования
     [FromQuery(Name = "editId")]
     public int? EditingId { get; set; }
 
@@ -30,21 +32,23 @@ public class HomeModel : PageModel
     public int TotalCount { get; set; }
     public int TotalPages => _linkService.CalculateTotalPages(TotalCount, PageSize);
 
+    private async Task<IActionResult> ReloadPage()
+    {
+        await OnGetAsync();
+        return Page();
+    }
     public async Task OnGetAsync()
     {
         var result = await _linkService.GetPagedLinksAsync(PageNumber, PageSize);
-
         ShortLinks = result.Links;
         TotalCount = result.TotalCount;
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid)
-        {
-            return await ReloadPage();
-        }
+        if (!ModelState.IsValid) return await ReloadPage();
 
+        //чтобы не выдавать ошибку если пользователь введёт ссылку без http или https
         NewUrl = _urlValidationService.NormalizeUrl(NewUrl);
 
         if (!_urlValidationService.IsValidUrl(NewUrl))
@@ -54,24 +58,15 @@ public class HomeModel : PageModel
         }
 
         await _linkService.CreateLinkAsync(NewUrl);
-
         return RedirectToPage(new { pageNumber = 1 });
     }
 
     public async Task<IActionResult> OnGetDeleteAsync(int id, [FromQuery] int pageNumber)
     {
         await _linkService.DeleteLinkAsync(id);
-
-        var totalCount = await _linkService.GetTotalCountAsync();
-        var totalPages = _linkService.CalculateTotalPages(totalCount, PageSize);
-
-        if (pageNumber > totalPages && totalPages > 0)
-        {
-            pageNumber = totalPages;
-        }
-
-        if (pageNumber < 1) pageNumber = 1;
-
+        //пересчёт страниц, ведь их количество изменится
+        var linksTotalCount = await _linkService.GetTotalCountAsync();
+        pageNumber = _linkService.CorrectPageNumber(pageNumber, linksTotalCount, PageSize);
         return RedirectToPage(new { pageNumber });
     }
 
@@ -85,16 +80,7 @@ public class HomeModel : PageModel
         }
 
         await _linkService.UpdateLinkAsync(id, newUrl);
-
         return RedirectToPage(new { pageNumber });
-    }
-
-    private async Task<IActionResult> ReloadPage()
-    {
-        var result = await _linkService.GetPagedLinksAsync(PageNumber, PageSize);
-        ShortLinks = result.Links;
-        TotalCount = result.TotalCount;
-        return Page();
     }
 
 }

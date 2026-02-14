@@ -14,7 +14,7 @@ namespace UrlShortener.Configuration
             services.AddScoped<IUrlValidationService, UrlValidationService>();
             services.AddScoped<ILinkService, LinkService>();
 
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("MariaDbConnection");
             services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
             return services;

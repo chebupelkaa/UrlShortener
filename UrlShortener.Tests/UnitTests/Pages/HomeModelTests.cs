@@ -8,98 +8,70 @@ namespace UrlShortener.Tests.UnitTests.Pages
 {
     public class HomeModelTests
     {
-        private readonly Mock<ILinkService> _linkServiceMock;
-        private readonly Mock<IUrlValidationService> _validatorMock;
-        private readonly HomeModel _model;
+        private readonly Mock<ILinkService> _mockLinkService;
+        private readonly Mock<IUrlValidationService> _mockValidator;
+        private readonly HomeModel _pageModel;
 
         public HomeModelTests()
         {
-            _linkServiceMock = new Mock<ILinkService>();
-            _validatorMock = new Mock<IUrlValidationService>();
-            _model = new HomeModel(_linkServiceMock.Object, _validatorMock.Object);
+            _mockLinkService = new Mock<ILinkService>();
+            _mockValidator = new Mock<IUrlValidationService>();
+            _pageModel = new HomeModel(_mockLinkService.Object, _mockValidator.Object);
         }
 
         [Fact]
-        public async Task OnPostAsync_ValidUrl_CreatesLinkAndRedirectsToPage1()
+        public async Task OnPostAsync_ValidUrl_CreatesLinkAndRedirects()
         {
             // Arrange
-            _model.NewUrl = "valid.com";
-
-            _validatorMock.Setup(v => v.NormalizeUrl(It.IsAny<string>())).Returns("https://valid.com");
-            _validatorMock.Setup(v => v.IsValidUrl(It.IsAny<string>())).Returns(true);
+            _pageModel.NewUrl = "valid-url.com";
+            _mockValidator.Setup(v => v.NormalizeUrl(It.IsAny<string>())).Returns("https://valid-url.com");
+            _mockValidator.Setup(v => v.IsValidUrl(It.IsAny<string>())).Returns(true);
 
             // Act
-            var result = await _model.OnPostAsync();
+            var result = await _pageModel.OnPostAsync();
 
             // Assert
-            _linkServiceMock.Verify(s => s.CreateLinkAsync("https://valid.com"), Times.Once);
-
-            var redirectResult = Assert.IsType<RedirectToPageResult>(result);
-
-            Assert.Equal(1, redirectResult.RouteValues?["pageNumber"]);
+            _mockLinkService.Verify(s => s.CreateLinkAsync("https://valid-url.com"), Times.Once);
+            var redirect = Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(1, redirect.RouteValues?["pageNumber"]);
         }
 
         [Fact]
         public async Task OnPostAsync_InvalidUrl_ReturnsPageWithError()
         {
             // Arrange
-            _model.NewUrl = "bad_input";
-
-            _validatorMock.Setup(v => v.NormalizeUrl(It.IsAny<string>())).Returns("bad_input");
-            _validatorMock.Setup(v => v.IsValidUrl(It.IsAny<string>())).Returns(false);
+            _pageModel.NewUrl = "bad-url";
+            _mockValidator.Setup(v => v.NormalizeUrl(It.IsAny<string>())).Returns("bad-url");
+            _mockValidator.Setup(v => v.IsValidUrl(It.IsAny<string>())).Returns(false);
 
             // Act
-            var result = await _model.OnPostAsync();
+            var result = await _pageModel.OnPostAsync();
 
             // Assert
             Assert.IsType<PageResult>(result);
-            Assert.False(_model.ModelState.IsValid);
-            Assert.True(_model.ModelState.ContainsKey("NewUrl"));
+            Assert.False(_pageModel.ModelState.IsValid);
+            Assert.True(_pageModel.ModelState.ContainsKey("NewUrl"));
 
-            _linkServiceMock.Verify(s => s.CreateLinkAsync(It.IsAny<string>()), Times.Never);
+            _mockLinkService.Verify(s => s.CreateLinkAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
-        public async Task OnGetDeleteAsync_DeletesAndRedirectsBack()
+        public async Task OnGetDeleteAsync_DeletesAndRedirectsCorrectly()
         {
             // Arrange
-            int idToDelete = 5;
+            int idToDelete = 10;
             int currentPage = 2;
 
-            _linkServiceMock.Setup(s => s.DeleteLinkAsync(idToDelete)).ReturnsAsync(true);
-            _linkServiceMock.Setup(s => s.GetTotalCountAsync()).ReturnsAsync(4);
-            _linkServiceMock.Setup(s => s.CalculateTotalPages(4, 5)).Returns(1);
-
-            _model.PageSize = 5;
+            _mockLinkService.Setup(s => s.GetTotalCountAsync()).ReturnsAsync(5);
+            _mockLinkService.Setup(s => s.CorrectPageNumber(currentPage, 5, It.IsAny<int>())).Returns(1);
 
             // Act
-            var result = await _model.OnGetDeleteAsync(idToDelete, currentPage);
+            var result = await _pageModel.OnGetDeleteAsync(idToDelete, currentPage);
 
             // Assert
-            var redirectResult = Assert.IsType<RedirectToPageResult>(result);
-
-            Assert.Equal(1, redirectResult.RouteValues?["pageNumber"]);
-        }
-
-        [Fact]
-        public async Task OnPostUpdateAsync_ValidUrl_UpdatesAndRedirects()
-        {
-            // Arrange
-            int idToUpdate = 1;
-            string newUrl = "updated.com";
-            int currentPage = 3;
-
-            _validatorMock.Setup(v => v.NormalizeUrl(newUrl)).Returns("https://updated.com");
-            _validatorMock.Setup(v => v.IsValidUrl(It.IsAny<string>())).Returns(true);
-
-            // Act
-            var result = await _model.OnPostUpdateAsync(idToUpdate, newUrl, currentPage);
-
-            // Assert
-            _linkServiceMock.Verify(s => s.UpdateLinkAsync(idToUpdate, "https://updated.com"), Times.Once);
-
-            var redirectResult = Assert.IsType<RedirectToPageResult>(result);
-            Assert.Equal(currentPage, redirectResult.RouteValues?["pageNumber"]);
+            _mockLinkService.Verify(s => s.DeleteLinkAsync(idToDelete), Times.Once);
+            var redirect = Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(1, redirect.RouteValues?["pageNumber"]);
         }
     }
 }

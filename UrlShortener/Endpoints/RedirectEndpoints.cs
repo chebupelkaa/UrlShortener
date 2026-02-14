@@ -7,10 +7,10 @@ namespace UrlShortener.Endpoints
     {
         public static void MapRedirectEndpoints(this WebApplication app)
         {
-            app.MapGet("/{code}", async (string code, AppDbContext db) =>
+            app.MapGet("/{shortCode}", async (string shortCode, AppDbContext db) =>
             {
-                // AsNoTracking() ускоряет чтение, так как нам не нужно отслеживать изменения сущности в памяти
-                var link = await db.ShortLinks.AsNoTracking().FirstOrDefaultAsync(l => l.ShortCode == code);
+                // использование AsNoTracking() чтобы данные не помещались в кэш, ускоряет чтение
+                var link = await db.ShortLinks.AsNoTracking().FirstOrDefaultAsync(l => l.ShortCode == shortCode);
 
                 if (link == null) return Results.NotFound();
 

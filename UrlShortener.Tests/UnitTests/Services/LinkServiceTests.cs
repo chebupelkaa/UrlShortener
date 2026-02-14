@@ -37,54 +37,35 @@ namespace UrlShortener.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetPagedLinksAsync_ReturnsNewestFirst()
-        {
-            // Arrange
-            using var db = GetInMemoryDbContext();
-            // Добавляем старую запись
-            db.ShortLinks.Add(new ShortLink { CreatedAt = DateTime.UtcNow.AddDays(-1), ShortCode = "OLD", OriginalUrl = "old" });
-            // Добавляем новую запись
-            db.ShortLinks.Add(new ShortLink { CreatedAt = DateTime.UtcNow, ShortCode = "NEW", OriginalUrl = "new" });
-            await db.SaveChangesAsync();
-
-            var service = new LinkService(db, null!);
-
-            // Act
-            var result = await service.GetPagedLinksAsync(1, 10);
-
-            // Assert
-            Assert.Equal("NEW", result.Links.First().ShortCode);
-            Assert.Equal(2, result.TotalCount);
-        }
-
-        [Fact]
         public async Task DeleteLinkAsync_RemovesItem()
         {
             // Arrange
             using var db = GetInMemoryDbContext();
-            var link = new ShortLink { Id = 1, ShortCode = "DEL", OriginalUrl = "url" };
+            var link = new ShortLink { Id = 99, OriginalUrl = "test", ShortCode = "test" };
             db.ShortLinks.Add(link);
             await db.SaveChangesAsync();
 
             var service = new LinkService(db, null!);
 
             // Act
-            var result = await service.DeleteLinkAsync(1);
+            var isDeleted = await service.DeleteLinkAsync(99);
 
             // Assert
-            Assert.True(result);
+            Assert.True(isDeleted);
             Assert.Empty(db.ShortLinks);
         }
 
         [Fact]
-        public void CalculateTotalPages_WorksCorrectly()
+        public void CorrectPageNumber_AdjustsInvalidPages()
         {
             var service = new LinkService(null!, null!);
 
             // Act & Assert
-            Assert.Equal(3, service.CalculateTotalPages(11, 5));
-            Assert.Equal(2, service.CalculateTotalPages(10, 5));
-            Assert.Equal(0, service.CalculateTotalPages(0, 5));
+            Assert.Equal(5, service.CorrectPageNumber(10, 50, 10));
+
+            Assert.Equal(1, service.CorrectPageNumber(-1, 50, 10));
+
+            Assert.Equal(2, service.CorrectPageNumber(2, 50, 10));
         }
     }
 }

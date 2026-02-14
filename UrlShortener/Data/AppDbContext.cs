@@ -11,7 +11,7 @@ namespace UrlShortener.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // создаём индексы для ускорения поиска и выборки данных
+            // индексы созданы для ускорения поиска и выборки данных
             modelBuilder.Entity<ShortLink>()
                 .HasIndex(l => l.ShortCode)
                 .IsUnique();
