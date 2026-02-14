@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using UrlShortener.Data;
 using UrlShortener.Models;
 using UrlShortener.Services;
 
@@ -9,13 +7,13 @@ namespace UrlShortener.Pages;
 
 public class HomeModel : PageModel
 {
-    private readonly AppDbContext _context;
-    private readonly IUrlShortenerService _shortenerService;
+    private readonly ILinkService _linkService;
+    private readonly IUrlValidationService _urlValidationService;
 
-    public HomeModel(AppDbContext context, IUrlShortenerService shortenerService)
+    public HomeModel(ILinkService linkService, IUrlValidationService urlValidationService)
     {
-        _context = context;
-        _shortenerService = shortenerService;
+        _linkService = linkService;
+        _urlValidationService = urlValidationService;
     }
 
     [BindProperty]
@@ -30,79 +28,73 @@ public class HomeModel : PageModel
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 5;
     public int TotalCount { get; set; }
-    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-    //public int ReturnPageNumber { get; set; }
+    public int TotalPages => _linkService.CalculateTotalPages(TotalCount, PageSize);
 
     public async Task OnGetAsync()
     {
-        await LoadLinksAsync();
+        var result = await _linkService.GetPagedLinksAsync(PageNumber, PageSize);
+
+        ShortLinks = result.Links;
+        TotalCount = result.TotalCount;
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
         {
-            await LoadLinksAsync();
-            return Page();
+            return await ReloadPage();
         }
 
-        if (!NewUrl.StartsWith("http://") && !NewUrl.StartsWith("https://"))
+        NewUrl = _urlValidationService.NormalizeUrl(NewUrl);
+
+        if (!_urlValidationService.IsValidUrl(NewUrl))
         {
-            NewUrl = "https://" + NewUrl;
+            ModelState.AddModelError("NewUrl", "Некорректный формат URL");
+            return await ReloadPage();
         }
 
-        string shortCode;
-        do
-        {
-            shortCode = _shortenerService.GenerateUniqueCode();
-        }
-        while (await _context.ShortLinks.AnyAsync(l => l.ShortCode == shortCode));
+        await _linkService.CreateLinkAsync(NewUrl);
 
-        var link = new ShortLink
-        {
-            OriginalUrl = NewUrl,
-            ShortCode = shortCode,
-            CreatedAt = DateTime.UtcNow,
-            ClickCount = 0
-        };
-
-        _context.ShortLinks.Add(link);
-        await _context.SaveChangesAsync();
-
-        return RedirectToPage();
+        return RedirectToPage(new { pageNumber = 1 });
     }
 
     public async Task<IActionResult> OnGetDeleteAsync(int id, [FromQuery] int pageNumber)
     {
-        var link = await _context.ShortLinks.FindAsync(id);
-        if (link != null)
+        await _linkService.DeleteLinkAsync(id);
+
+        var totalCount = await _linkService.GetTotalCountAsync();
+        var totalPages = _linkService.CalculateTotalPages(totalCount, PageSize);
+
+        if (pageNumber > totalPages && totalPages > 0)
         {
-            _context.ShortLinks.Remove(link);
-            await _context.SaveChangesAsync();
+            pageNumber = totalPages;
         }
+
+        if (pageNumber < 1) pageNumber = 1;
+
         return RedirectToPage(new { pageNumber });
     }
 
     public async Task<IActionResult> OnPostUpdateAsync(int id, string newUrl, [FromQuery] int pageNumber)
     {
-        var link = await _context.ShortLinks.FindAsync(id);
-        if (link != null)
+        newUrl = _urlValidationService.NormalizeUrl(newUrl);
+
+        if (!_urlValidationService.IsValidUrl(newUrl))
         {
-            link.OriginalUrl = newUrl;
-            await _context.SaveChangesAsync();
+            return RedirectToPage(new { pageNumber, editId = id });
         }
+
+        await _linkService.UpdateLinkAsync(id, newUrl);
+
         return RedirectToPage(new { pageNumber });
     }
 
-    private async Task LoadLinksAsync()
+    private async Task<IActionResult> ReloadPage()
     {
-        var query = _context.ShortLinks.OrderByDescending(l => l.CreatedAt);
-
-        TotalCount = await query.CountAsync();
-        ShortLinks = await query
-            .Skip((PageNumber - 1) * PageSize)
-            .Take(PageSize)
-            .ToListAsync();
+        var result = await _linkService.GetPagedLinksAsync(PageNumber, PageSize);
+        ShortLinks = result.Links;
+        TotalCount = result.TotalCount;
+        return Page();
     }
 
 }

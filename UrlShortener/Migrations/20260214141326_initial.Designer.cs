@@ -12,7 +12,7 @@ using UrlShortener.Data;
 namespace UrlShortener.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260212193416_initial")]
+    [Migration("20260214141326_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -46,9 +46,14 @@ namespace UrlShortener.Migrations
 
                     b.Property<string>("ShortCode")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ShortCode")
+                        .IsUnique();
 
                     b.ToTable("ShortLinks");
                 });

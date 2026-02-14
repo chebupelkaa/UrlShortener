@@ -23,7 +23,7 @@ namespace UrlShortener.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OriginalUrl = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ShortCode = table.Column<string>(type: "longtext", nullable: false)
+                    ShortCode = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     ClickCount = table.Column<long>(type: "bigint", nullable: false)
@@ -33,6 +33,17 @@ namespace UrlShortener.Migrations
                     table.PrimaryKey("PK_ShortLinks", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShortLinks_CreatedAt",
+                table: "ShortLinks",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShortLinks_ShortCode",
+                table: "ShortLinks",
+                column: "ShortCode",
+                unique: true);
         }
 
         /// <inheritdoc />
