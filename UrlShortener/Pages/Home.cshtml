@@ -22,15 +22,14 @@
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
-
                     <table class="table table-links table-hover align-middle">
-                        <thead class="table">
+                        <thead>
                             <tr>
-                                <th>Длинный URL</th>
-                                <th>Сокращенный URL</th>
-                                <th>Дата создания</th>
-                                <th>Кол-во переходов</th>
-                                <th>Управление</th>
+                                <th style="width: 40%;">Длинный URL</th>
+                                <th style="width: 25%;">Сокращенный URL</th>
+                                <th style="width: 15%;" class="text-center">Дата создания</th>
+                                <th style="width: 10%;" class="text-center">Кол-во переходов</th>
+                                <th style="width: 15%;" class="text-center">Управление</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,44 +47,52 @@
                                             }
                                             else
                                             {
-                                                <a href="@link.OriginalUrl" target="_blank" title="@link.OriginalUrl">
+                                                <a href="@link.OriginalUrl" target="_blank" title="@link.OriginalUrl" class="d-block text-truncate link-styled">
                                                     @link.OriginalUrl
                                                 </a>
                                             }
                                         </td>
-                                        <td>
-                                            <a href="/@link.ShortCode" target="_blank">
-                                                @($"{Request.Scheme}://{Request.Host}/{link.ShortCode}")
-                                            </a>
-                                            <button class="btn btn-sm btn-link"
-                                                    onclick="navigator.clipboard.writeText('@($"{Request.Scheme}://{Request.Host}/{link.ShortCode}")')">
-                                            </button>
+
+                                        <td class="text-truncate" style="max-width: 1px;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <a href="/@link.ShortCode" target="_blank" class="link-styled">
+                                                    @($"{Request.Scheme}://{Request.Host}/{link.ShortCode}")
+                                                </a>
+                                                <button class="btn btn-sm btn-link p-0 text-decoration-none text-secondary"
+                                                        onclick="navigator.clipboard.writeText('@($"{Request.Scheme}://{Request.Host}/{link.ShortCode}")')">
+                                                </button>
+                                            </div>
                                         </td>
-                                        <td>@link.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                                        <td class="text-center align-middle">
-                                            <span class="badge bg-primary rounded-pill px-3 py-2 click-count-badge">
+
+                                        <td class="text-center">
+                                            @link.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                        </td>
+
+                                        <td class="text-center">
+                                            <span class="badge bg-primary rounded-pill click-count-badge">
                                                 @link.ClickCount
                                             </span>
                                         </td>
-                                        <td>
+
+                                        <td class="text-center">
                                             @if (Model.EditingId == link.Id)
                                             {
-                                                <div>
-                                                    <button type="submit" form="edit-form-@link.Id" class="btn btn-primary">
+                                                <div class="d-grid gap-1">
+                                                    <button type="submit" form="edit-form-@link.Id" class="btn btn-primary btn-sm">
                                                         Сохранить
                                                     </button>
-                                                    <a asp-page="/Home" asp-route-pageNumber="@Model.PageNumber" class="btn btn-secondary">
+                                                    <a asp-page="/Home" asp-route-pageNumber="@Model.PageNumber" class="btn btn-secondary btn-sm">
                                                         Отмена
                                                     </a>
                                                 </div>
                                             }
                                             else
                                             {
-                                                <div>
-                                                    <a asp-page="/Home" asp-route-editId="@link.Id" asp-route-pageNumber="@Model.PageNumber" class="btn btn-primary">
+                                                <div class="d-grid gap-1">
+                                                    <a asp-page="/Home" asp-route-editId="@link.Id" asp-route-pageNumber="@Model.PageNumber" class="btn btn-primary btn-sm">
                                                         Редактировать
                                                     </a>
-                                                    <a asp-page-handler="Delete" asp-route-id="@link.Id" asp-route-pageNumber="@Model.PageNumber" class="btn btn-primary" onclick="return confirm('Удалить ссылку?')">
+                                                    <a asp-page-handler="Delete" asp-route-id="@link.Id" asp-route-pageNumber="@Model.PageNumber" class="btn btn-primary btn-sm" onclick="return confirm('Удалить ссылку?')">
                                                         Удалить
                                                     </a>
                                                 </div>
@@ -93,7 +100,6 @@
                                         </td>
                                     </tr>
                                 }
-
                             }
                             else
                             {
@@ -105,24 +111,21 @@
                     </table>
 
                     <nav>
-                        <ul class="pagination justify-content-center">
+                        <ul class="pagination justify-content-center mt-3">
                             <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
                                 <a class="page-link" asp-page="/Home" asp-route-pageNumber="@(Model.PageNumber - 1)">Назад</a>
                             </li>
-
                             @for (int i = 1; i <= Model.TotalPages; i++)
                             {
                                 <li class="page-item @(i == Model.PageNumber ? "active" : "")">
                                     <a class="page-link" asp-page="/Home" asp-route-pageNumber="@i">@i</a>
                                 </li>
                             }
-
                             <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
                                 <a class="page-link" asp-page="/Home" asp-route-pageNumber="@(Model.PageNumber + 1)">Вперед</a>
                             </li>
                         </ul>
                     </nav>
-
                 </div>
             </div>
         </div>
