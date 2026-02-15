@@ -83,4 +83,11 @@ public class HomeModel : PageModel
         return RedirectToPage(new { pageNumber });
     }
 
+    public async Task<IActionResult> OnGetClickCountAsync(int id)
+    {
+        var link = await _linkService.GetLinkByIdAsync(id); 
+        if (link == null) return NotFound();
+        return new JsonResult(new { count = link.ClickCount });
+    }
+
 }

@@ -10,6 +10,7 @@ namespace UrlShortener.Services
         Task<bool> UpdateLinkAsync(int id, string newUrl);
         int CalculateTotalPages(int totalCount, int pageSize);
         Task<int> GetTotalCountAsync();
+        Task<ShortLink?> GetLinkByIdAsync(int id);
         int CorrectPageNumber(int page, int totalCount, int pageSize);
     }
 }

@@ -88,6 +88,11 @@ namespace UrlShortener.Services
             return await _context.ShortLinks.CountAsync();
         }
 
+        public async Task<ShortLink?> GetLinkByIdAsync(int id)
+        {
+            return await _context.ShortLinks.FindAsync(id);
+        }
+
         public int CorrectPageNumber(int page, int totalCount, int pageSize)
         {
             var totalPages = CalculateTotalPages(totalCount, pageSize);

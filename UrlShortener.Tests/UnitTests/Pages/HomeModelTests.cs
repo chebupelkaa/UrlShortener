@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
+using UrlShortener.Models;
 using UrlShortener.Pages;
 using UrlShortener.Services;
 
@@ -72,6 +73,43 @@ namespace UrlShortener.Tests.UnitTests.Pages
             _mockLinkService.Verify(s => s.DeleteLinkAsync(idToDelete), Times.Once);
             var redirect = Assert.IsType<RedirectToPageResult>(result);
             Assert.Equal(1, redirect.RouteValues?["pageNumber"]);
+        }
+
+        [Fact]
+        public async Task OnGetClickCountAsync_ExistingId_ReturnsJsonWithCount()
+        {
+            // Arrange
+            int linkId = 5;
+            long expectedClicks = 42;
+
+            var link = new ShortLink { Id = linkId, ClickCount = expectedClicks };
+            _mockLinkService.Setup(s => s.GetLinkByIdAsync(linkId)).ReturnsAsync(link);
+
+            // Act
+            var result = await _pageModel.OnGetClickCountAsync(linkId);
+
+            // Assert
+            var jsonResult = Assert.IsType<JsonResult>(result);
+            var value = jsonResult.Value;
+            var countProperty = value?.GetType().GetProperty("count");
+            var actualClicks = countProperty?.GetValue(value);
+
+            Assert.NotNull(actualClicks);
+            Assert.Equal(expectedClicks, actualClicks);
+        }
+
+        [Fact]
+        public async Task OnGetClickCountAsync_NonExistingId_ReturnsNotFound()
+        {
+            // Arrange
+            int linkId = 999;
+            _mockLinkService.Setup(s => s.GetLinkByIdAsync(linkId)).ReturnsAsync((ShortLink?)null);
+
+            // Act
+            var result = await _pageModel.OnGetClickCountAsync(linkId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }

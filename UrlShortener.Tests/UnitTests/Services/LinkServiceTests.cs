@@ -67,5 +67,39 @@ namespace UrlShortener.Tests.UnitTests.Services
 
             Assert.Equal(2, service.CorrectPageNumber(2, 50, 10));
         }
+
+        [Fact]
+        public async Task GetLinkByIdAsync_ExistingId_ReturnsLink()
+        {
+            // Arrange
+            using var db = GetInMemoryDbContext();
+            var link = new ShortLink { Id = 10, OriginalUrl = "find-me", ShortCode = "find" };
+            db.ShortLinks.Add(link);
+            await db.SaveChangesAsync();
+
+            var service = new LinkService(db, null!);
+
+            // Act
+            var result = await service.GetLinkByIdAsync(10);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(10, result.Id);
+            Assert.Equal("find-me", result.OriginalUrl);
+        }
+
+        [Fact]
+        public async Task GetLinkByIdAsync_NonExistingId_ReturnsNull()
+        {
+            // Arrange
+            using var db = GetInMemoryDbContext();
+            var service = new LinkService(db, null!);
+
+            // Act
+            var result = await service.GetLinkByIdAsync(999);
+
+            // Assert
+            Assert.Null(result);
+        }
     }
 }
