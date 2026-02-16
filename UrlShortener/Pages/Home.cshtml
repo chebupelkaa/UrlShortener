@@ -138,19 +138,23 @@
 
 @section Scripts {
     <script>
-        async function updateClickCount(id) {
-            await new Promise(r => setTimeout(r, 1000));
-            try {
-                const response = await fetch(`?handler=ClickCount&id=${id}`);
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState !== 'visible') return;
 
-                if (response.ok) {
-                    const data = await response.json();
-                    const badge = document.getElementById(`clicks-${id}`);
-                    if (badge) badge.innerText = data.count;
+            try {
+                const badges = document.querySelectorAll('.click-count-badge');
+                // обновить в цикле все счётчики
+                for (const badge of badges) {
+                    const id = badge.id.replace('clicks-', '');
+                    const response = await fetch(`?handler=ClickCount&id=${id}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        badge.innerText = data.count;
+                    }
                 }
             } catch (error) {
-                console.error('Ошибка обновления счетчика:', error);
+                console.error('Ошибка обновления счётчиков:', error);
             }
-        }
+        });
     </script>
 }

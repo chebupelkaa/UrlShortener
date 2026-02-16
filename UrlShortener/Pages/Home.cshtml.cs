@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Runtime.InteropServices;
 using UrlShortener.Models;
 using UrlShortener.Services;
 
@@ -85,7 +84,7 @@ public class HomeModel : PageModel
 
     public async Task<IActionResult> OnGetClickCountAsync(int id)
     {
-        var link = await _linkService.GetLinkByIdAsync(id); 
+        var link = await _linkService.GetLinkByIdAsync(id);
         if (link == null) return NotFound();
         return new JsonResult(new { count = link.ClickCount });
     }

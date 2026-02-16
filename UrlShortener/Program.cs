@@ -7,6 +7,7 @@ builder.Services.ConfigureApplication(builder.Configuration);
 var app = builder.Build();
 await app.Services.MigrateDatabaseAsync();
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
